@@ -4,6 +4,40 @@ import { Request, Response } from "express";
 const prisma = new PrismaClient();
 
 export default {
+	async findUserById(req: Request, res: Response) {
+		const { id } = req.params;
+		try {
+			const user = await prisma.user.findUnique({
+				where: { id: Number(id) },
+			});
+			if (user) return res.json(user);
+			res.json({
+				error: `Não foi encontratdo usuário com o id: ${id}`,
+			});
+		} catch (error) {
+			res.json({
+				error: `Não foi encontratdo usuário com o id: ${id}`,
+			});
+		}
+	},
+
+	async findUserByEmail(req: Request, res: Response) {
+		const { email } = req.params;
+		try {
+			const user = await prisma.user.findUnique({
+				where: { email: email },
+			});
+			if (user) return res.json(user);
+			res.json({
+				error: `Não foi encontratdo usuário com o email: ${email}`,
+			});
+		} catch (error) {
+			res.json({
+				error: `Não foi encontrado usuário com email: ${email}`,
+			});
+		}
+	},
+
 	async createUser(req: Request, res: Response) {
 		try {
 			const { name, email, password } = req.body;
@@ -21,57 +55,48 @@ export default {
 			return res.send("usuário gravado com sucesso");
 		}
 	},
-	async findUserByEmail(req: Request, res: Response) {
-		const { email } = req.params;
-		const user = await prisma.user.findFirst({
-			where: { email: email },
-		});
-		return res.json(user);
-	},
 
 	async findAllUsers(req: Request, res: Response) {
 		const user = await prisma.user.findMany();
 		return res.json(user);
 	},
 
-	async updateUserEmail(req: Request, res: Response) {
-		const {id} = req.params;
-		const { emailSource, emailDestination } = req.body;
+	async updateUser(req: Request, res: Response) {
+		const { id } = req.params;
+		const { name, email, password } = req.body;
 		try {
-
 			let user = await prisma.user.findUnique({ where: { id: Number(id) } });
-
 			if (!user) {
 				return res.json({
 					error: "Usuário não cadastrado.",
 				});
 			}
-			
+
 			user = await prisma.user.update({
-				where: { email: emailSource },
-				data: {
-					email: emailDestination,
-				},
+				where: { id: Number(id) },
+				data: { name, email, password },
 			});
 			res.json(user);
 		} catch (error) {
 			res.json({
-				error: `User with email ${emailSource} does not exist in the database`,
+				error: `User with id ${id} does not exist in the database`,
 			});
 		}
 	},
 
 	async deleteUser(req: Request, res: Response) {
-		const { email } = req.body;
-		let user = await prisma.user.findUnique({ where: { email } });
+		const { id } = req.params;
+		let user = await prisma.user.findUnique({ where: { id: Number(id) } });
 		if (!user) {
 			return res.json({
-				error: "Não existe um usuário cadastrado com esse email.",
+				error: `Não existe um usuário cadastrado com o id ${id}.`,
 			});
 		}
 		user = await prisma.user.delete({
-			where: { email: email },
+			where: { id: Number(id) },
 		});
-		res.json(user);
+		return res.json({
+			message: `Usuário com id ${id} foi deletado permanentemente.`,
+		});
 	},
 };

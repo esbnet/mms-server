@@ -5,19 +5,11 @@ import UserController from "./userController/userController";
 const userRouter = express.Router();
 const prisma = new PrismaClient();
 
-// add user
-userRouter.post("/add", UserController.createUser);
-
-// find user by email address
-userRouter.get("/:email", UserController.findUserByEmail);
-
-// find all users
+userRouter.get("/:id", UserController.findUserById);
+userRouter.get("/email/:email", UserController.findUserByEmail);
 userRouter.get("/", UserController.findAllUsers);
-
-// update user email
-userRouter.put("/", UserController.updateUserEmail);
-
-// delete user
-userRouter.delete(`/`, UserController.deleteUser);
+userRouter.post("/add", UserController.createUser);
+userRouter.put("/:id", UserController.updateUser);
+userRouter.delete(`/:id`, UserController.deleteUser);
 
 export { userRouter };
